@@ -48,7 +48,7 @@ bird <- read.csv("arboretum_data.csv", header = TRUE,
 ### | species | jdate | year | migtype | ###
 
 ############################################
-# kestrel_data.csv cleaning
+# kestrel_data.csv cleaning (object = amke)
 ############################################
 
 # issues with date formatting
@@ -116,7 +116,101 @@ amke_tobind <- amke[,which(colnames(amke) %in% c("species", "jdate", "year"))]
 amke_tobind <- amke_tobind[,c(1,3,2)]
 
 ##############################################
-# bluebird.csv cleaning
+# bluebird.csv cleaning (object = eabl)
 ##############################################
 
+#111111111111111111111111111
+# remove unnecessary columns
+#111111111111111111111111111
 
+# grab the ones we need
+eabl <- eabl[,which(colnames(eabl) %in% c("COMMON.NAME", "First.Egg..Julian.date.",
+                                          "Eggdate"))]
+
+#change the column names
+colnames(eabl) <- c("species", "jdate", "year")
+
+#22222222222222222
+# make year column
+#22222222222222222
+
+# the year stuff is seperated by a forward slash just like the
+# amke data so we can use the same technique
+eabl$year <- unlist(lapply(strsplit(eabl$year, "/"), FUN = function(x) x[3]))
+
+#333333333333333333333
+# change species names
+#333333333333333333333
+
+#eastern bluebird to EABL
+eabl$species <- gsub("eastern bluebird", "EABL", eabl$species, ignore.case = TRUE)
+
+#house wren to HOWR
+eabl$species <- gsub("house wren", "HOWR", eabl$species, ignore.case = TRUE)
+
+#tree swallow to TRES
+eabl$species <- gsub("tree swallow", "TRES", eabl$species, ignore.case = TRUE)
+
+#44444444444444444444
+# prepare for binding
+#44444444444444444444
+
+# we actually have it ready now
+eabl_tobind <- eabl
+
+###########################################################
+# clean arboretum.csv data (object = bird)
+###########################################################
+
+#111111111111111111111111111
+# remove unnecessary columns
+#111111111111111111111111111
+
+# grab the ones we need
+ bird <- bird[,which(colnames(bird) %in% c("totall.Ordinal", "Spp.", "Year"))]
+
+#change the column names
+colnames(bird) <- c("year", "jdate", "species")
+
+# move the columns around
+bird <- bird[,c(3,2,1)]
+
+#222222222222222222222222
+# remove unnecessary rows
+#222222222222222222222222
+
+# make blank values NA
+bird$species[bird$species == ""] <- NA
+bird$jdate[bird$jdate == ""] <- NA
+bird$year[bird$year == ""] <- NA
+
+# remove incomplete cases
+bird <- bird[complete.cases(bird),]
+
+#33333333333333333333
+# prepare for binding
+#33333333333333333333
+
+# nothing else needed
+bird_tobind <- bird
+
+#######################################################
+# combine the three datasets (object = bd)
+#######################################################
+
+# rowbind the data
+bd <- rbind(bird_tobind, amke_tobind, eabl_tobind)
+
+# save these data 
+write.csv(bd, "cleaned_bird_data_complete.csv", row.names = FALSE)
+
+# figure out how many observations of each species we have
+nobs <- data.frame(table(bd$species))
+colnames(nobs) <- c("species", "nobs")
+
+# sort by amount of data
+nobs <- nobs[order(nobs$nobs, decreasing = TRUE),]
+row.names(nobs) <- NULL
+
+# write these data
+write.csv(nobs, "number_of_observations_1994_onward.csv", row.names = FALSE)
