@@ -25,4 +25,10 @@ fa$species <- factor(fa$species)
 
 m1 <- lmer(jdate ~ year + (1+year|species), data = fa )
 
+grps <- read.csv("mig_type.csv", header = TRUE)
 
+library(dplyr)
+
+a <- left_join(fa, grps, by = "species")
+a$migtype <- factor(a$migtype, levels = c("resident", "long", "short"))
+m2 <- lmer(jdate ~ year + migtype + (1+year|species), data = a)
