@@ -175,9 +175,9 @@ colnames(bird) <- c("year", "jdate", "species")
 # move the columns around
 bird <- bird[,c(3,2,1)]
 
-#222222222222222222222222
-# remove unnecessary rows
-#222222222222222222222222
+#222222222222222222222222222222222222222
+# remove unnecessary rows and fix others
+#222222222222222222222222222222222222222
 
 # make blank values NA
 bird$species[bird$species == ""] <- NA
@@ -186,6 +186,21 @@ bird$year[bird$year == ""] <- NA
 
 # remove incomplete cases
 bird <- bird[complete.cases(bird),]
+
+# change TRSW to TRES
+bird$species <- gsub("TRSW", "TRES", bird$species, ignore.case = TRUE)
+
+# change REBL to RWBL
+bird$species <- gsub("REBL", "RWBL", bird$species, ignore.case = TRUE)
+
+# change RTHA to RTHU
+bird$species <- gsub("RTHA", "RTHU", bird$species, ignore.case = TRUE)
+
+# remove RUKI
+bird <- bird[-which(bird$species=="RUKI"),]
+
+
+####################
 
 #33333333333333333333
 # prepare for binding
@@ -214,3 +229,5 @@ row.names(nobs) <- NULL
 
 # write these data
 write.csv(nobs, "number_of_observations_1994_onward.csv", row.names = FALSE)
+
+
